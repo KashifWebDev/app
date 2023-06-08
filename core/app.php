@@ -5,7 +5,7 @@ ini_set('display_errors', 1);
 
 $hostname = "localhost";
 $user = "u953547654_app";
-$pwd = "App@123455";
+$pwd = "App@12345";
 $db = "u953547654_app";
 $con = mysqli_connect($hostname, $user, $pwd, $db);
 echo "Test";
