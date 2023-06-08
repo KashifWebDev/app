@@ -10,10 +10,15 @@ if(isset($_POST['email']) && isset($_POST['password'])){
     if($result){
         if(mysqli_num_rows($result) > 0){
             $res = mysqli_fetch_array($result, MYSQLI_ASSOC);
-            $response['status'] = true;
-            $response['message'] = "Login Successful";
-            $response['data'] = $res;
-            $status = 200;
+            if($res['verified']){
+                $response['status'] = true;
+                $response['message'] = "Login Successful";
+                $response['data'] = $res;
+                $status = 200;
+            }else{
+                $response['message'] = "Please verify your account in order to proceed.";
+                $status = 404;
+            }
         }else{
             $response['message'] = "Login failed";
             $status = 404;
