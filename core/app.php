@@ -8,8 +8,6 @@ $user = "u953547654_app";
 $pwd = "App@12345";
 $db = "u953547654_app";
 $con = mysqli_connect($hostname, $user, $pwd, $db);
-echo "Test";
-exit();
 
 $response = array(
     'status' => false,
