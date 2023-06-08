@@ -2,9 +2,9 @@
 header("Content-Type: application/json");
 
 $hostname = "localhost";
-$user = "root";
-$pwd = "";
-$db = "projects_gymapp";
+$user = "u953547654_app";
+$pwd = "App@12345";
+$db = "u953547654_app";
 $con = mysqli_connect($hostname, $user, $pwd, $db);
 
 $response = array(
