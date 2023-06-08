@@ -5,7 +5,7 @@ if(isset($_POST['email']) && isset($_POST['password'])){
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
     $password = filter_input(INPUT_POST, 'password');
 
-    $query = "select id, userType, fullName, email, phone, address from users where email='$email' AND password='$password'";
+    $query = "select id, userType, fullName, email, phone, address, verified from users where email='$email' AND password='$password'";
     $result = mysqli_query($con, $query);
     if($result){
         if(mysqli_num_rows($result) > 0){
