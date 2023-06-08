@@ -10,7 +10,7 @@ if(isset($_POST['email']) && isset($_POST['password'])){
     if($result){
         if(mysqli_num_rows($result) > 0){
             $res = mysqli_fetch_array($result, MYSQLI_ASSOC);
-            if($res['verified']){
+            if($response['verified']){
                 $response['status'] = true;
                 $response['message'] = "Login Successful";
                 $response['data'] = $res;
