@@ -18,7 +18,7 @@ if(isset($_POST['userType']) && isset($_POST['fullName']) && isset($_POST['email
         $response['message'] = 'Email Already Exists!';
         $status = 404;
     }else{
-        $query = "INSERT INTO users (userType, fullName, email, phone, address, password, lat, long)
+        $query = "INSERT INTO users (userType, fullName, email, phone, address, password, lat, loong)
                 VALUES ('$userType', '$fullName', '$email', '$phone', '$address', '$password', $lat, $long)";
         $result = mysqli_query($con, $query);
         if($result){
