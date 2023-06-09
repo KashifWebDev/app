@@ -3,7 +3,7 @@ header("Content-Type: application/json");
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$hostname = "localhost"
+$hostname = "localhost";
 
 $user = "u953547654_app";
 $pwd = "App@12345";
