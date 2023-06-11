@@ -1,8 +1,9 @@
 <?php
 
 
-require '../vendor/autoload.php';
 use PHPMailer\PHPMailer\PHPMailer;
+
+require '../vendor/autoload.php';
 
 
 function generateOPT($con, $email){
@@ -19,6 +20,8 @@ function generateOPT($con, $email){
 }
 
 function sendEmailOTP($email, $otp) {
+
+    require '../vendor/autoload.php';
     // Create a new PHPMailer instance
     $mail = new PHPMailer();
 
