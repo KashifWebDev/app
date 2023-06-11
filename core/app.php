@@ -1,8 +1,6 @@
 <?php
 
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
 
 header("Content-Type: application/json");
 error_reporting(E_ALL);
@@ -10,13 +8,13 @@ ini_set('display_errors', 1);
 
 $hostname = "localhost";
 
-$user = "root";
-$pwd = "";
-$db = "projects_gymapp";
-
 $user = "u953547654_app";
 $pwd = "App@12345";
 $db = "u953547654_app";
+
+$user = "root";
+$pwd = "";
+$db = "projects_gymapp";
 
 
 
@@ -39,11 +37,14 @@ function generateOPT($con, $email){
     mysqli_stmt_bind_param($stmt, 'is', $otp, $email);
     mysqli_stmt_execute($stmt);
 
-    sendEmailOTP($email, $otp);
+    if(!sendEmailOTP($email, $otp)){
+        echo "Email err"; exit(); die();
+    }
     return $otp;
 }
 
 function sendEmailOTP($email, $otp) {
+    require '../vendor/autoload.php';
     // Create a new PHPMailer instance
     $mail = new PHPMailer();
 
