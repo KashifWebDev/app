@@ -7,13 +7,13 @@ ini_set('display_errors', 1);
 $hostname = "localhost";
 
 
-$user = "root";
-$pwd = "";
-$db = "projects_gymapp";
-
 $user = "u953547654_app";
 $pwd = "App@12345";
 $db = "u953547654_app";
+
+$user = "root";
+$pwd = "";
+$db = "projects_gymapp";
 
 $appPath = 'https://app.kashifali.me';
 

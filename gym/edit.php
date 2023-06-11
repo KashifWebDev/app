@@ -2,7 +2,7 @@
 require '../core/app.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $requiredParameters = ['gym_id', 'gymName', 'sessionType', 'gender', 'address', 'lat', 'long'];
+    $requiredParameters = ['gym_id', 'gymName', 'sessionType', 'gender', 'address', 'lat', 'long', 'fee'];
     $missingParameters = [];
 
     foreach ($requiredParameters as $parameter) {
@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $address = $_POST['address'];
         $lat = $_POST['lat'];
         $loong = $_POST['long'];
+        $fees = $_POST['fee'];
 
         // Handle file upload
         $uploadDir = '../uploads/gyms/'; // Specify the directory where you want to store the uploaded files
@@ -42,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        $updateQuery = "UPDATE gyms SET name = '$gymName', sessions = '$sessionType', gender = '$gender', address = '$address', lat = $lat, loong = $loong";
+        $updateQuery = "UPDATE gyms SET name = '$gymName', sessions = '$sessionType', gender = '$gender', address = '$address', lat = $lat, loong = $loong, fees = $fees";
 
         if (!empty($img)) {
             $updateQuery .= ", img = '$img'";

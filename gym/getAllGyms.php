@@ -21,8 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     'sessions' => $row['sessions'],
                     'gender' => $row['gender'],
                     'address' => $row['address'],
-                    'lat' => $row['lat'],
-                    'loong' => $row['loong'],
+                    'fee' => (int) $row['fees'],
+                    'lat' => (float) $row['lat'],
+                    'loong' => (float) $row['loong'],
                     'img' => $appPath.'/uploads/gyms/'.$row['img']
                 );
             }
