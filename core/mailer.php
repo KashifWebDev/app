@@ -21,7 +21,7 @@ function generateOPT($con, $email){
 
 function sendEmailOTP($email, $otp) {
     // Create a new PHPMailer instance
-    $mail = new PHPMailer;
+    $mail = new PHPMailer();
 
     // SMTP Configuration (Replace with your own SMTP settings)
     $mail->isSMTP();
