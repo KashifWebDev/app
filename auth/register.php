@@ -1,5 +1,6 @@
 <?php
 require '../core/app.php';
+require '../core/mailer.php';
 
 if(isset($_POST['userType']) && isset($_POST['fullName']) && isset($_POST['email']) &&
     isset($_POST['phone']) && isset($_POST['address']) && isset($_POST['password']) && isset($_POST['lat']) && isset($_POST['long'])){

@@ -1,5 +1,6 @@
 <?php
 require '../core/app.php';
+require '../core/mailer.php';
 
 if (isset($_POST['email'])) {
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
