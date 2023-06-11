@@ -20,10 +20,8 @@ function generateOPT($con, $email){
 }
 
 function sendEmailOTP($email, $otp) {
-
-    require '../vendor/autoload.php';
     // Create a new PHPMailer instance
-    $mail = new PHPMailer();
+    $mail = new PHPMailer;
 
     // SMTP Configuration (Replace with your own SMTP settings)
     $mail->isSMTP();
