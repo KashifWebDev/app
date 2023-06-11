@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     'address' => $row['address'],
                     'lat' => $row['lat'],
                     'loong' => $row['loong'],
-                    'img' => $row['img']
+                    'img' => $appPath.'/uploads/gyms/'.$row['img']
                 );
             }
 
