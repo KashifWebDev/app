@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'address' => $row['address'],
                 'lat' => (float) $row['lat'],
                 'long' => (float) $row['loong'],
-                'img' => 'https://app.kashifali.me/'.'/uploads/gyms/'.$row['img']
+                'img' => 'https://app.kashifali.me'.'/uploads/gyms/'.$row['img']
             );
 
             $gyms[] = $gym;
