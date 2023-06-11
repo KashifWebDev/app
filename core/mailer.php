@@ -4,12 +4,6 @@
 use PHPMailer\PHPMailer\PHPMailer;
 require '../vendor/autoload.php';
 
-require_once '../vendor/phpmailer/phpmailer/src/PHPMailer.php';
-require_once '../vendor/phpmailer/phpmailer/src/SMTP.php';
-require_once '../vendor/phpmailer/phpmailer/src/Exception.php';
-
-use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
 
 function generateOPT($con, $email){
     $otp = rand(1000, 9999);
