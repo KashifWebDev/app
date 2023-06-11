@@ -1,8 +1,8 @@
 <?php
 
 
-use PHPMailer\PHPMailer\PHPMailer;
 require '../vendor/autoload.php';
+use PHPMailer\PHPMailer\PHPMailer;
 
 
 function generateOPT($con, $email){
