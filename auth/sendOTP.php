@@ -4,16 +4,7 @@ require '../core/app.php';
 if (isset($_POST['email'])) {
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
 
-    // Generate a random OTP
-    $otp = rand(1000, 9999);
-
-    // Store the OTP in the database for verification
-    // (Update the 'verification_code' column in the 'users' table for the specific user)
-    $query = "UPDATE users SET verification_code = ? WHERE email = ?";
-    $stmt = mysqli_prepare($con, $query);
-    mysqli_stmt_bind_param($stmt, 'is', $otp, $email);
-    mysqli_stmt_execute($stmt);
-
+    $otp = generateOPT($con, $email);
     // Send the email with the OTP
     $subject = 'OTP Verification';
     $message = 'Your OTP is: ' . $otp;

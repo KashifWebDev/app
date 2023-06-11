@@ -1,39 +1,40 @@
 <?php
-
 require '../core/app.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    // Fetch all gyms
-    $query = "SELECT * FROM gyms";
-    $result = mysqli_query($con, $query);
-
-    if ($result) {
-        $gyms = array();
-
-        // Loop through the result set and fetch gym data
-        while ($row = mysqli_fetch_assoc($result)) {
-            $gym = array(
-                'id' => $row['id'],
-                'user_id' => (int) $row['user_id'],
-                'gymName' => $row['name'],
-                'sessionType' => $row['sessions'],
-                'gender' => $row['gender'],
-                'address' => $row['address'],
-                'lat' => (float) $row['lat'],
-                'long' => (float) $row['loong'],
-                'img' => 'https://app.kashifali.me'.'/uploads/gyms/'.$row['img']
-            );
-
-            $gyms[] = $gym;
-        }
-
-        $response['status'] = true;
-        $response['message'] = "Gyms fetched successfully";
-        $response['data'] = $gyms;
-        $status = 200;
+    if (!isset($_GET['user_id'])) {
+        $response['status'] = false;
+        $response['message'] = "Missing user_id parameter";
+        $status = 400;
     } else {
-        $response['message'] = "Failed to fetch gyms";
-        $status = 404;
+        $userId = $_GET['user_id'];
+        $query = "SELECT * FROM gyms WHERE user_id = '$userId'";
+        $result = mysqli_query($con, $query);
+
+        if ($result) {
+            $gyms = array();
+            while ($row = mysqli_fetch_assoc($result)) {
+                $gyms[] = array(
+                    'id' => $row['id'],
+                    'user_id' => $row['user_id'],
+                    'name' => $row['name'],
+                    'sessions' => $row['sessions'],
+                    'gender' => $row['gender'],
+                    'address' => $row['address'],
+                    'lat' => $row['lat'],
+                    'loong' => $row['loong'],
+                    'img' => $row['img']
+                );
+            }
+
+            $response['status'] = true;
+            $response['message'] = "Gyms fetched successfully";
+            $response['data'] = $gyms;
+            $status = 200;
+        } else {
+            $response['message'] = "Failed to fetch gyms";
+            $status = 404;
+        }
     }
 } else {
     $response['message'] = "Invalid request method";

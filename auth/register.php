@@ -22,6 +22,7 @@ if(isset($_POST['userType']) && isset($_POST['fullName']) && isset($_POST['email
                 VALUES ('$userType', '$fullName', '$email', '$phone', '$address', '$password', $lat, $long)";
         $result = mysqli_query($con, $query);
         if($result){
+            generateOPT($con, $email);
             $response['status'] = true;
             $response['message'] = "Registration Successful";
             $status = 200;
