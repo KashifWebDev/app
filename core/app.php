@@ -3,19 +3,20 @@
 header("Content-Type: application/json");
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+const APIKEY = 'AIzaSyCJBr0IOmZ5jL8vtfNK30gVzpd_fGc1xm4';
 
 $hostname = "localhost";
 
-
-$user = "root";
-$pwd = "";
-$db = "projects_gymapp";
 
 $user = "u953547654_app";
 $pwd = "App@12345";
 $db = "u953547654_app";
 
-$appPath = 'https://app.kashifali.me';
+$user = "root";
+$pwd = "";
+$db = "test1";
+
+$appPath = $GLOBALS['appPath'] = 'https://app.kashifali.me';
 
 
 $con = mysqli_connect($hostname, $user, $pwd, $db);

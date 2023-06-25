@@ -43,6 +43,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($result) {
                 $response['status'] = true;
                 $response['message'] = "User profile updated successfully";
+                unset($_POST['user_id']);
+                unset($_POST['password']);
+                $response['data'] = $_POST;
                 $status = 200;
             } else {
                 $response['message'] = "Failed to update user profile";
