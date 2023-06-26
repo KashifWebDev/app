@@ -2,38 +2,31 @@
 require '../core/app.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    if (!isset($_GET['user_id'])) {
-        $response['status'] = false;
-        $response['message'] = "Missing user_id parameter";
-        $status = 400;
+    $userLat = isset($_GET['lat']) ? $_GET['lat'] : null;
+    $userLng = isset($_GET['long']) ? $_GET['long'] : null;
+    $radius = isset($_GET['radius']) ? $_GET['radius'] : null;
+    $sessionType = isset($_GET['session']) ? $_GET['session'] : null;
+    $gender = isset($_GET['gender']) ? $_GET['gender'] : null;
+    $fee = isset($_GET['fee']) ? $_GET['fee'] : null;
+
+    if ($userLat !== null && $userLng !== null && $radius === null) {
+        // If lat and long are provided without radius, list all gyms without applying the radius filter
+        $gyms = getAllGyms($sessionType, $gender, $fee);
     } else {
-        $userID = $_GET['user_id'];
-        $userLat = isset($_GET['lat']) ? $_GET['lat'] : null;
-        $userLng = isset($_GET['long']) ? $_GET['long'] : null;
-        $radius = isset($_GET['radius']) ? $_GET['radius'] : null;
-        $sessionType = isset($_GET['session']) ? $_GET['session'] : null;
-        $gender = isset($_GET['gender']) ? $_GET['gender'] : null;
-        $fee = isset($_GET['fee']) ? $_GET['fee'] : null;
+        // Filter gyms within the specified radius
+        $gyms = getGymsWithinRadius($userLat, $userLng, $radius, $sessionType, $gender, $fee);
+    }
 
-        if ($userLat !== null && $userLng !== null && $radius === null) {
-            // If lat and long are provided without radius, list all gyms without applying the radius filter
-            $gyms = getAllGyms($userID, $sessionType, $gender, $fee);
-        } else {
-            // Filter gyms within the specified radius
-            $gyms = getGymsWithinRadius($userLat, $userLng, $radius, $userID, $sessionType, $gender, $fee);
-        }
-
-        if (!empty($gyms)) {
-            $response['status'] = true;
-            $response['message'] = "Gyms fetched successfully";
-            $response['data'] = $gyms;
-            $status = 200;
-        } else {
-            $response['status'] = true;
-            $response['message'] = "No gyms found";
-            $response['data'] = [];
-            $status = 200;
-        }
+    if (!empty($gyms)) {
+        $response['status'] = true;
+        $response['message'] = "Gyms fetched successfully";
+        $response['data'] = $gyms;
+        $status = 200;
+    } else {
+        $response['status'] = true;
+        $response['message'] = "No gyms found";
+        $response['data'] = [];
+        $status = 200;
     }
 } else {
     $response['status'] = false;
@@ -44,35 +37,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 echo json_encode($response);
 http_response_code($status);
 
-function getGymsWithinRadius($userLat, $userLng, $radius, $userID, $sessionType, $gender, $fee)
+function getGymsWithinRadius($userLat, $userLng, $radius, $sessionType, $gender, $fee)
 {
     global $con; // Assuming $con is the database connection object
 
     $gyms = [];
 
     if ($userLat !== null && $userLng !== null && $radius !== null) {
-        $query = "SELECT gyms.id, gyms.name, gyms.sessions, gyms.gender, gyms.address, gyms.lat, gyms.loong, gyms.img, gyms.fees
-              FROM gyms
-              INNER JOIN user_payments ON gyms.id = user_payments.gym_id
-              WHERE user_payments.user_id = ?";
+        $query = "SELECT id, name, sessions, gender, address, lat, loong, img, fees
+              FROM gyms";
 
-        $params = [$userID];
+        $params = [];
 
         if ($sessionType !== null) {
-            $query .= " AND gyms.sessions = ?";
+            $query .= " WHERE sessions = ?";
             $params[] = $sessionType;
         }
         if ($gender !== null) {
-            $query .= " AND gyms.gender = ?";
+            $query .= ($sessionType !== null) ? " AND gender = ?" : " WHERE gender = ?";
             $params[] = $gender;
         }
         if ($fee !== null) {
-            $query .= " AND gyms.fees <= ?";
+            $query .= ($sessionType !== null || $gender !== null) ? " AND fees <= ?" : " WHERE fees <= ?";
             $params[] = $fee;
         }
 
         $stmt = mysqli_prepare($con, $query);
-        mysqli_stmt_bind_param($stmt, str_repeat('i', count($params)), ...$params);
+
+        if (!empty($params)) {
+            $types = str_repeat('s', count($params));
+            $stmt_params = array_merge([$stmt, $types], $params);
+            call_user_func_array('mysqli_stmt_bind_param', $stmt_params);
+        }
+
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
 
@@ -92,40 +89,44 @@ function getGymsWithinRadius($userLat, $userLng, $radius, $userID, $sessionType,
             }
         }
     } else {
-        $gyms = getAllGyms($userID, $sessionType, $gender, $fee);
+        $gyms = getAllGyms($sessionType, $gender, $fee);
     }
 
     return $gyms;
 }
 
-function getAllGyms($userID, $sessionType, $gender, $fee)
+function getAllGyms($sessionType, $gender, $fee)
 {
     global $con; // Assuming $con is the database connection object
 
     $gyms = [];
 
-    $query = "SELECT gyms.id, gyms.name, gyms.sessions, gyms.gender, gyms.address, gyms.lat, gyms.loong, gyms.img, gyms.fees
-              FROM gyms
-              INNER JOIN user_payments ON gyms.id = user_payments.gym_id
-              WHERE user_payments.user_id = ?";
+    $query = "SELECT id, name, sessions, gender, address, lat, loong, img, fees
+              FROM gyms";
 
-    $params = [$userID];
+    $params = [];
 
     if ($sessionType !== null) {
-        $query .= " AND gyms.sessions = ?";
+        $query .= " WHERE sessions = ?";
         $params[] = $sessionType;
     }
     if ($gender !== null) {
-        $query .= " AND gyms.gender = ?";
+        $query .= ($sessionType !== null) ? " AND gender = ?" : " WHERE gender = ?";
         $params[] = $gender;
     }
     if ($fee !== null) {
-        $query .= " AND gyms.fees <= ?";
+        $query .= ($sessionType !== null || $gender !== null) ? " AND fees <= ?" : " WHERE fees <= ?";
         $params[] = $fee;
     }
 
     $stmt = mysqli_prepare($con, $query);
-    mysqli_stmt_bind_param($stmt, str_repeat('i', count($params)), ...$params);
+
+    if (!empty($params)) {
+        $types = str_repeat('s', count($params));
+        $stmt_params = array_merge([$stmt, $types], $params);
+        call_user_func_array('mysqli_stmt_bind_param', $stmt_params);
+    }
+
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
 
@@ -155,3 +156,4 @@ function calculateDistance($lat1, $lng1, $lat2, $lng2)
 
     return $distance;
 }
+
