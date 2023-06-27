@@ -65,8 +65,8 @@ function getGymsWithinRadius($userLat, $userLng, $radius, $sessionType, $gender,
         $stmt = mysqli_prepare($con, $query);
 
         if (!empty($params)) {
-            $types = str_repeat('s', count($params));
-            $stmt_params = array_merge([$stmt, $types], $params);
+            $paramTypes = generateParamTypes($params);
+            $stmt_params = array_merge([$stmt, $paramTypes], getParamReferences($params));
             call_user_func_array('mysqli_stmt_bind_param', $stmt_params);
         }
 
@@ -108,22 +108,22 @@ function getAllGyms($sessionType, $gender, $fee)
 
     if ($sessionType !== null) {
         $query .= " WHERE sessions = ?";
-        $params[] = $sessionType;
+        $params[] = &$sessionType;
     }
     if ($gender !== null) {
         $query .= ($sessionType !== null) ? " AND gender = ?" : " WHERE gender = ?";
-        $params[] = $gender;
+        $params[] = &$gender;
     }
     if ($fee !== null) {
         $query .= ($sessionType !== null || $gender !== null) ? " AND fees <= ?" : " WHERE fees <= ?";
-        $params[] = $fee;
+        $params[] = &$fee;
     }
 
     $stmt = mysqli_prepare($con, $query);
 
     if (!empty($params)) {
-        $types = str_repeat('s', count($params));
-        $stmt_params = array_merge([$stmt, $types], $params);
+        $paramTypes = generateParamTypes($params);
+        $stmt_params = array_merge([$stmt, $paramTypes], $params);
         call_user_func_array('mysqli_stmt_bind_param', $stmt_params);
     }
 
@@ -142,6 +142,7 @@ function getAllGyms($sessionType, $gender, $fee)
     return $gyms;
 }
 
+
 function calculateDistance($lat1, $lng1, $lat2, $lng2)
 {
     $earthRadius = 6371; // Radius of the Earth in kilometers
@@ -157,3 +158,26 @@ function calculateDistance($lat1, $lng1, $lat2, $lng2)
     return $distance;
 }
 
+function generateParamTypes($params)
+{
+    $types = '';
+    foreach ($params as $param) {
+        if (is_int($param)) {
+            $types .= 'i';
+        } elseif (is_double($param)) {
+            $types .= 'd';
+        } else {
+            $types .= 's';
+        }
+    }
+    return $types;
+}
+
+function getParamReferences($params)
+{
+    $references = [];
+    foreach ($params as $key => $param) {
+        $references[$key] = &$params[$key];
+    }
+    return $references;
+}
