@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     } else {
         $userID = $_GET['user_id'];
 
-        $query = "SELECT gyms.id, gyms.name, gyms.sessions, gyms.gender, gyms.address, gyms.lat, gyms.loong, gyms.img  FROM gyms 
+        $query = "SELECT gyms.id, gyms.name, gyms.sessions, gyms.gender, gyms.address, gyms.lat, gyms.loong, gyms.img, gyms.fees  FROM gyms 
                   INNER JOIN user_payments ON gyms.id = user_payments.gym_id
                   WHERE user_payments.user_id = ?";
         $stmt = mysqli_prepare($con, $query);
