@@ -8,13 +8,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $sessionType = isset($_GET['session']) ? $_GET['session'] : null;
     $gender = isset($_GET['gender']) ? $_GET['gender'] : null;
     $fee = isset($_GET['fee']) ? $_GET['fee'] : null;
+    $days = isset($_GET['days']) ? $_GET['days'] : null;
+    $startTime = isset($_GET['startTime']) ? $_GET['startTime'] : null;
+    $endTime = isset($_GET['endTime']) ? $_GET['endTime'] : null;
 
     if ($userLat !== null && $userLng !== null && $radius === null) {
         // If lat and long are provided without radius, list all gyms without applying the radius filter
-        $gyms = getAllGyms($sessionType, $gender, $fee);
+        $gyms = getAllGyms($sessionType, $gender, $fee, $days, $startTime, $endTime);
     } else {
         // Filter gyms within the specified radius
-        $gyms = getGymsWithinRadius($userLat, $userLng, $radius, $sessionType, $gender, $fee);
+        $gyms = getGymsWithinRadius($userLat, $userLng, $radius, $sessionType, $gender, $fee, $days, $startTime, $endTime);
     }
 
     if (!empty($gyms)) {
@@ -37,14 +40,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 echo json_encode($response);
 http_response_code($status);
 
-function getGymsWithinRadius($userLat, $userLng, $radius, $sessionType, $gender, $fee)
+function getGymsWithinRadius($userLat, $userLng, $radius, $sessionType, $gender, $fee, $days, $startTime, $endTime)
 {
     global $con; // Assuming $con is the database connection object
 
     $gyms = [];
 
     if ($userLat !== null && $userLng !== null && $radius !== null) {
-        $query = "SELECT id, name, sessions, gender, address, lat, loong, img, fees
+        $query = "SELECT id, name, sessions, gender, address, lat, loong, img, fees, days, startTime, endTime
               FROM gyms";
 
         $params = [];
@@ -81,27 +84,30 @@ function getGymsWithinRadius($userLat, $userLng, $radius, $sessionType, $gender,
                 $distance = calculateDistance($userLat, $userLng, $gymLat, $gymLng);
 
                 if ($distance <= $radius) {
-                    $row['lat'] = (float) $row['lat'];
-                    $row['loong'] = (float) $row['loong'];
-                    $row['img'] = $GLOBALS['appPath'] . '/uploads/gyms/' . $row['img'];
-                    $gyms[] = $row;
+                    // Check if the gym is available on the specified days and within the specified time range
+                    if (checkGymAvailability($row, $days, $startTime, $endTime)) {
+                        $row['lat'] = (float) $row['lat'];
+                        $row['loong'] = (float) $row['loong'];
+                        $row['img'] = $GLOBALS['appPath'] . '/uploads/gyms/' . $row['img'];
+                        $gyms[] = $row;
+                    }
                 }
             }
         }
     } else {
-        $gyms = getAllGyms($sessionType, $gender, $fee);
+        $gyms = getAllGyms($sessionType, $gender, $fee, $days, $startTime, $endTime);
     }
 
     return $gyms;
 }
 
-function getAllGyms($sessionType, $gender, $fee)
+function getAllGyms($sessionType, $gender, $fee, $days, $startTime, $endTime)
 {
     global $con; // Assuming $con is the database connection object
 
     $gyms = [];
 
-    $query = "SELECT id, name, sessions, gender, address, lat, loong, img, fees
+    $query = "SELECT id, name, sessions, gender, address, lat, loong, img, fees, days, startTime, endTime
               FROM gyms";
 
     $params = [];
@@ -123,7 +129,7 @@ function getAllGyms($sessionType, $gender, $fee)
 
     if (!empty($params)) {
         $paramTypes = generateParamTypes($params);
-        $stmt_params = array_merge([$stmt, $paramTypes], $params);
+        $stmt_params = array_merge([$stmt, $paramTypes], getParamReferences($params));
         call_user_func_array('mysqli_stmt_bind_param', $stmt_params);
     }
 
@@ -132,25 +138,59 @@ function getAllGyms($sessionType, $gender, $fee)
 
     if ($result) {
         while ($row = mysqli_fetch_assoc($result)) {
-            $row['lat'] = (float) $row['lat'];
-            $row['loong'] = (float) $row['loong'];
-            $row['img'] = $GLOBALS['appPath'] . '/uploads/gyms/' . $row['img'];
-            $gyms[] = $row;
+            // Check if the gym is available on the specified days and within the specified time range
+            if (checkGymAvailability($row, $days, $startTime, $endTime)) {
+                $row['lat'] = (float) $row['lat'];
+                $row['loong'] = (float) $row['loong'];
+                $row['img'] = $GLOBALS['appPath'] . '/uploads/gyms/' . $row['img'];
+                $gyms[] = $row;
+            }
         }
     }
 
     return $gyms;
 }
 
+function checkGymAvailability($gym, $days, $startTime, $endTime)
+{
+    if ($days !== null) {
+        $gymDays = explode(',', $gym['days']);
+        $userDays = explode(',', $days);
+        $intersect = array_intersect($gymDays, $userDays);
+        if (empty($intersect)) {
+            return false;
+        }
+    }
+
+    if ($startTime !== null && $endTime !== null) {
+        $gymStartTime = strtotime($gym['startTime']);
+        $gymEndTime = strtotime($gym['endTime']);
+        $userStartTime = strtotime($startTime);
+        $userEndTime = strtotime($endTime);
+
+        if ($gymStartTime === false || $gymEndTime === false) {
+            return false; // Skip gyms with default time '00:00:00'
+        }
+
+        if ($userStartTime < $gymStartTime || $userEndTime > $gymEndTime) {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 function calculateDistance($lat1, $lng1, $lat2, $lng2)
 {
-    $earthRadius = 6371; // Radius of the Earth in kilometers
+    $earthRadius = 6371; // in kilometers
 
-    $latDiff = deg2rad($lat2 - $lat1);
-    $lngDiff = deg2rad($lng2 - $lng1);
+    $dLat = deg2rad($lat2 - $lat1);
+    $dLng = deg2rad($lng2 - $lng1);
 
-    $a = sin($latDiff / 2) * sin($latDiff / 2) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($lngDiff / 2) * sin($lngDiff / 2);
+    $a = sin($dLat / 2) * sin($dLat / 2) +
+        cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+        sin($dLng / 2) * sin($dLng / 2);
+
     $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
     $distance = $earthRadius * $c;
@@ -160,24 +200,24 @@ function calculateDistance($lat1, $lng1, $lat2, $lng2)
 
 function generateParamTypes($params)
 {
-    $types = '';
+    $paramTypes = "";
     foreach ($params as $param) {
-        if (is_int($param)) {
-            $types .= 'i';
+        if (is_string($param)) {
+            $paramTypes .= "s";
+        } elseif (is_int($param)) {
+            $paramTypes .= "i";
         } elseif (is_double($param)) {
-            $types .= 'd';
-        } else {
-            $types .= 's';
+            $paramTypes .= "d";
         }
     }
-    return $types;
+    return $paramTypes;
 }
 
 function getParamReferences($params)
 {
-    $references = [];
-    foreach ($params as $key => $param) {
-        $references[$key] = &$params[$key];
+    $paramReferences = [];
+    foreach ($params as $key => $value) {
+        $paramReferences[] = &$params[$key];
     }
-    return $references;
+    return $paramReferences;
 }

@@ -28,8 +28,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $result = mysqli_query($con, $checkUserQuery);
 
         if ($result && mysqli_num_rows($result) > 0) {
+            // Handle file upload
+
+            $img = 'default.jpg';
+            if (isset($_FILES['img'])) {
+                $uploadDir = '../uploads/users/'; // Specify the directory where you want to store the uploaded files
+                $file = $_FILES['img'];
+                $fileName = $file['name'];
+                $fileTmpName = $file['tmp_name'];
+
+                // Generate a unique file name to avoid conflicts
+                $uniqueFileName = uniqid() . '_' . $fileName;
+
+                // Move the uploaded file to the desired directory
+                if (move_uploaded_file($fileTmpName, $uploadDir . $uniqueFileName)) {
+                    $img = $uniqueFileName;
+                }
+            }
             // Update the user profile
-            $updateQuery = "UPDATE users SET fullName = '$fullName', phone = '$phone', address = '$address'";
+            $updateQuery = "UPDATE users SET fullName = '$fullName', phone = '$phone', address = '$address', img='$img'";
 
             // Update the password if provided
             if (!empty($password)) {
@@ -45,6 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $response['message'] = "User profile updated successfully";
                 unset($_POST['user_id']);
                 unset($_POST['password']);
+                $_POST['img'] = $appPath.'/uploads/users/'.$img;
                 $response['data'] = $_POST;
                 $status = 200;
             } else {
