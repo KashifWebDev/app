@@ -7,13 +7,13 @@ const APIKEY = 'AIzaSyCJBr0IOmZ5jL8vtfNK30gVzpd_fGc1xm4';
 
 $hostname = "localhost";
 
-$user = "u953547654_app";
-$pwd = "App@12345";
-$db = "u953547654_app";
-
 $user = "root";
 $pwd = "";
 $db = "gymApp";
+
+$user = "u953547654_app";
+$pwd = "App@12345";
+$db = "u953547654_app";
 
 
 $appPath = $GLOBALS['appPath'] = 'https://app.kashifali.me';
