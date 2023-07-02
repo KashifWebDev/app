@@ -2,7 +2,7 @@
 require '../core/app.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $requiredParameters = ['user_id', 'gymName', 'sessionType', 'gender', 'address', 'lat', 'long', 'fee'];
+    $requiredParameters = ['user_id', 'gymName', 'sessionType', 'gender', 'address', 'lat', 'long', 'fee', 'days', 'startTime', 'endTime'];
     $missingParameters = [];
 
     foreach ($requiredParameters as $parameter) {
@@ -24,9 +24,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $lat = $_POST['lat'];
         $loong = $_POST['long'];
         $fees = $_POST['fee'];
+        $days = $_POST['days'];
+        $startTime = $_POST['startTime'];
+        $endTime = $_POST['endTime'];
 
         // Handle file upload
-        $uploadDir = '../uploads/gyms/'; // Specify the directory where you want to store the uploaded files
+        $uploadDir = '../uploads/gyms/';
         $img = 'default.jpg';
 
         if (isset($_FILES['img'])) {
@@ -44,8 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Insert parameters into the 'gyms' table
-        $query = "INSERT INTO gyms (user_id, name, sessions, gender, address, lat, loong, img, fees) VALUES
-                        ($userId, '$gymName', '$sessionType', '$gender', '$address', $lat, $loong, '$img', '$fees')";
+        $query = "INSERT INTO gyms (user_id, name, sessions, gender, address, lat, loong, img, fees, days, startTime, endTime) VALUES
+                        ($userId, '$gymName', '$sessionType', '$gender', '$address', $lat, $loong, '$img', '$fees', '$days', '$startTime', '$endTime')";
         $stmt = mysqli_query($con, $query);
 
         if ($stmt) {
