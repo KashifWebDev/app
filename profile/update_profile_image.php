@@ -3,7 +3,7 @@
 require '../core/app.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $requiredParameters = ['user_id', 'fullName', 'phone', 'address'];
+    $requiredParameters = ['user_id'];
     $missingParameters = [];
 
     foreach ($requiredParameters as $parameter) {
@@ -18,37 +18,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $status = 400;
     } else {
         $userId = $_POST['user_id'];
-        $fullName = $_POST['fullName'];
-        $phone = $_POST['phone'];
-        $address = $_POST['address'];
-        $password = $_POST['password'] ?? null;
 
         // Check if the user exists
         $checkUserQuery = "SELECT id FROM users WHERE id = $userId";
         $result = mysqli_query($con, $checkUserQuery);
 
         if ($result && mysqli_num_rows($result) > 0) {
-            // Update the user profile
-            $updateQuery = "UPDATE users SET fullName = '$fullName', phone = '$phone', address = '$address'";
+            // Handle file upload
+            $uploadDir = '../uploads/users/';
+            $img = 'default.jpg';
 
-            // Update the password if provided
-            if (!empty($password)) {
-                $updateQuery .= ", password = '$password'";
+            if (isset($_FILES['img']) && $_FILES['img']['error'] === UPLOAD_ERR_OK) {
+                $file = $_FILES['img'];
+                $fileName = $file['name'];
+                $fileTmpName = $file['tmp_name'];
+
+                // Generate a unique file name to avoid conflicts
+                $uniqueFileName = uniqid() . '_' . $fileName;
+
+                // Move the uploaded file to the desired directory
+                if (move_uploaded_file($fileTmpName, $uploadDir . $uniqueFileName)) {
+                    $img = $uniqueFileName;
+                }
             }
 
-            $updateQuery .= " WHERE id = $userId";
-
+            // Update the user's profile image
+            $updateQuery = "UPDATE users SET img = '$img' WHERE id = $userId";
             $result = mysqli_query($con, $updateQuery);
 
             if ($result) {
                 $response['status'] = true;
-                $response['message'] = "User profile updated successfully";
-                unset($_POST['user_id']);
-                unset($_POST['password']);
-                $response['data'] = $_POST;
+                $response['message'] = "User profile image updated successfully";
+                $response['data'] = ['img' => $appPath . '/uploads/users/' . $img];
                 $status = 200;
             } else {
-                $response['message'] = "Failed to update user profile";
+                $response['message'] = "Failed to update user profile image";
                 $status = 404;
             }
         } else {
