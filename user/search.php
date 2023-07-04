@@ -2,15 +2,15 @@
 require '../core/app.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $userLat = isset($_GET['lat']) ? $_GET['lat'] : null;
-    $userLng = isset($_GET['long']) ? $_GET['long'] : null;
-    $radius = isset($_GET['radius']) ? $_GET['radius'] : null;
-    $sessionType = isset($_GET['session']) ? $_GET['session'] : null;
-    $gender = isset($_GET['gender']) ? $_GET['gender'] : null;
-    $fee = isset($_GET['fee']) ? $_GET['fee'] : null;
-    $days = isset($_GET['days']) ? $_GET['days'] : null;
-    $startTime = isset($_GET['startTime']) ? $_GET['startTime'] : null;
-    $endTime = isset($_GET['endTime']) ? $_GET['endTime'] : null;
+    $userLat = $_GET['lat'] ?? null;
+    $userLng = $_GET['long'] ?? null;
+    $radius = $_GET['radius'] ?? null;
+    $sessionType = $_GET['session'] ?? null;
+    $gender = $_GET['gender'] ?? null;
+    $fee = $_GET['fee'] ?? null;
+    $days = $_GET['days'] ?? null;
+    $startTime = $_GET['startTime'] ?? null;
+    $endTime = $_GET['endTime'] ?? null;
 
     if ($userLat !== null && $userLng !== null && $radius === null) {
         // If lat and long are provided without radius, list all gyms without applying the radius filter
