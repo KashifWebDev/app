@@ -5,6 +5,8 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 const APIKEY = 'AIzaSyCJBr0IOmZ5jL8vtfNK30gVzpd_fGc1xm4';
 
+
+
 $hostname = "localhost";
 $user = "root";
 $pwd = "";
