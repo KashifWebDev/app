@@ -163,7 +163,7 @@ function checkGymAvailability($gym, $days, $startTime, $endTime, $types)
         }
     }
     if ($types !== null) {
-        $gymTypes = explode(',', $gym['types']);
+        $gymTypes = $gym['types'] !== null ? explode(',', $gym['types']) : [];
         $userTypes = explode(',', $types);
         $intersect = array_intersect($gymTypes, $userTypes);
         if (empty($intersect)) {
