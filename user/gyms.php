@@ -9,9 +9,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     } else {
         $userID = $_GET['user_id'];
 
-        $query = "SELECT gyms.id, gyms.name, gyms.sessions, gyms.gender, gyms.address, gyms.lat, gyms.loong, gyms.img, gyms.fees  FROM gyms 
+        $query = "SELECT gyms.id, gyms.name, gyms.sessions, gyms.gender, gyms.address, gyms.lat, gyms.loong, gyms.img, gyms.fees, AVG(ratings.rating) AS avg_rating
+                  FROM gyms
                   INNER JOIN user_payments ON gyms.id = user_payments.gym_id
-                  WHERE user_payments.user_id = ?";
+                  LEFT JOIN ratings ON gyms.id = ratings.gym_id
+                  WHERE user_payments.user_id = ?
+                  GROUP BY gyms.id";
         $stmt = mysqli_prepare($con, $query);
         mysqli_stmt_bind_param($stmt, 'i', $userID);
         mysqli_stmt_execute($stmt);
@@ -22,6 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $row['lat'] = (float) $row['lat'];
             $row['loong'] = (float) $row['loong'];
             $row['img'] = $appPath.'/uploads/gyms/'.$row['img'];
+            $row['rating'] = ($row['avg_rating'] !== null) ? round($row['avg_rating'], 2) : null;
+            unset($row['avg_rating']);
             $gyms[] = $row;
         }
 

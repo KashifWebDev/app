@@ -2,7 +2,7 @@
 require '../core/app.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $requiredParameters = ['gym_id', 'gymName', 'sessionType', 'gender', 'address', 'lat', 'long', 'fee', 'days', 'startTime', 'endTime'];
+    $requiredParameters = ['gym_id', 'gymName', 'sessionType', 'gender', 'address', 'lat', 'long', 'fee', 'days', 'startTime', 'endTime', 'types'];
     $missingParameters = [];
 
     foreach ($requiredParameters as $parameter) {
@@ -27,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $days = $_POST['days'];
         $startTime = $_POST['startTime'];
         $endTime = $_POST['endTime'];
+        $types = $_POST['types'];
 
         // Handle file upload
         $uploadDir = '../uploads/gyms/';
@@ -46,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        $updateQuery = "UPDATE gyms SET name = '$gymName', sessions = '$sessionType', gender = '$gender', address = '$address', lat = $lat, loong = $loong, fees = $fees, days = '$days', startTime = '$startTime', endTime = '$endTime'";
+        $updateQuery = "UPDATE gyms SET name = '$gymName', sessions = '$sessionType', gender = '$gender', address = '$address', lat = $lat, loong = $loong, fees = $fees, days = '$days', startTime = '$startTime', endTime = '$endTime', types = '$types'";
 
         if (!empty($img)) {
             $updateQuery .= ", img = '$img'";

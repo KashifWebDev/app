@@ -8,12 +8,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $status = 400;
     } else {
         $userId = $_GET['user_id'];
-        $query = "SELECT * FROM gyms WHERE user_id = '$userId'";
+        $query = "SELECT gyms.id, gyms.user_id, gyms.name, gyms.sessions, gyms.gender, gyms.address, gyms.fees, gyms.lat, gyms.loong, gyms.days, gyms.startTime, gyms.endTime, gyms.img, AVG(ratings.rating) AS avg_rating
+                FROM gyms
+                LEFT JOIN ratings ON gyms.id = ratings.gym_id
+                WHERE gyms.user_id = '$userId'
+                GROUP BY gyms.id";
         $result = mysqli_query($con, $query);
 
         if ($result) {
             $gyms = array();
             while ($row = mysqli_fetch_assoc($result)) {
+                $gymId = $row['id'];
+
+                // Fetch videos for the current gym
+                $videosQuery = "SELECT filename FROM videos WHERE gym_id = '$gymId'";
+                $videosResult = mysqli_query($con, $videosQuery);
+                $videos = array();
+                while ($videoRow = mysqli_fetch_assoc($videosResult)) {
+                    $videos[] = $appPath.'/uploads/videos/'.$videoRow['filename'];
+                }
+
                 $gyms[] = array(
                     'id' => $row['id'],
                     'user_id' => $row['user_id'],
@@ -25,9 +39,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     'lat' => (float) $row['lat'],
                     'loong' => (float) $row['loong'],
                     'days' => $row['days'],
-                    'startTime ' => $row['startTime'],
-                    'endTime  ' => $row['endTime'],
-                    'img' => $appPath.'/uploads/gyms/'.$row['img']
+                    'startTime' => $row['startTime'],
+                    'endTime' => $row['endTime'],
+                    'img' => $appPath.'/uploads/gyms/'.$row['img'],
+                    'videos' => $videos,
+                    'rating' => ($row['avg_rating'] !== null) ? round($row['avg_rating'], 2) : null
                 );
             }
 

@@ -22,6 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $phone = $_POST['phone'];
         $address = $_POST['address'];
         $password = $_POST['password'] ?? null;
+        $age = $_POST['age'] ?? null;
 
         // Check if the user exists
         $checkUserQuery = "SELECT id FROM users WHERE id = $userId";
@@ -34,6 +35,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Update the password if provided
             if (!empty($password)) {
                 $updateQuery .= ", password = '$password'";
+            }
+
+            // Update the age if provided
+            if (!empty($age)) {
+                $updateQuery .= ", age = $age";
             }
 
             $updateQuery .= " WHERE id = $userId";
