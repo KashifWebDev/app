@@ -153,7 +153,8 @@ function getAllGyms($sessionType, $gender, $fee, $days, $startTime, $endTime, $t
                 $row['lat'] = (float) $row['lat'];
                 $row['loong'] = (float) $row['loong'];
                 $row['img'] = $GLOBALS['appPath'] . '/uploads/gyms/' . $row['img'];
-                $row['avg_rating'] = ($ratingData !== null) ? round($ratingData['avg_rating'], 2) : null;
+                $avg = $ratingData['avg_rating'] ?? 0;
+                $row['avg_rating'] = ($ratingData !== null) ? round($avg, 2) : null;
                 $row['total_ratings'] = ($ratingData !== null) ? $ratingData['total_ratings'] : 0;
 
                 $gyms[] = $row;
