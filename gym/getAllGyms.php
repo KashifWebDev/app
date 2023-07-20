@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $status = 400;
     } else {
         $userId = $_GET['user_id'];
-        $query = "SELECT gyms.id, gyms.user_id, gyms.name, gyms.sessions, gyms.gender, gyms.address, gyms.fees, gyms.lat, gyms.loong, gyms.days, gyms.startTime, gyms.endTime, gyms.img, gyms.types, AVG(ratings.rating) AS avg_rating
+        $query = "SELECT gyms.id, gyms.user_id, gyms.name, gyms.sessions, gyms.gender, gyms.address, gyms.fees, gyms.lat, gyms.loong, gyms.days, gyms.startTime, gyms.endTime, gyms.img, gyms.types, AVG(ratings.rating) AS avg_rating, COUNT(ratings.rating) AS total_ratings
                 FROM gyms
                 LEFT JOIN ratings ON gyms.id = ratings.gym_id
                 WHERE gyms.user_id = '$userId'
@@ -21,11 +21,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 $gymId = $row['id'];
 
                 // Fetch videos for the current gym
-                $videosQuery = "SELECT filename FROM videos WHERE gym_id = '$gymId'";
+                $videosQuery = "SELECT id, filename FROM videos WHERE gym_id = '$gymId'";
                 $videosResult = mysqli_query($con, $videosQuery);
                 $videos = array();
                 while ($videoRow = mysqli_fetch_assoc($videosResult)) {
-                    $videos[] = $appPath.'/uploads/videos/'.$videoRow['filename'];
+                    $videos[] = array(
+                        'id' => $videoRow['id'],
+                        'path' => $appPath.'/uploads/videos/'.$videoRow['filename']
+                    );
                 }
 
                 $gyms[] = array(
@@ -44,7 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     'types' => $row['types'],
                     'img' => $appPath.'/uploads/gyms/'.$row['img'],
                     'videos' => $videos,
-                    'rating' => ($row['avg_rating'] !== null) ? round($row['avg_rating'], 2) : null
+                    'rating' => ($row['avg_rating'] !== null) ? round($row['avg_rating'], 2) : null,
+                    'total_ratings' => (int) $row['total_ratings']
                 );
             }
 
@@ -64,3 +68,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
 echo json_encode($response);
 http_response_code($status);
+?>

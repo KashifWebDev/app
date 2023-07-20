@@ -87,9 +87,15 @@ function getGymsWithinRadius($userLat, $userLng, $radius, $sessionType, $gender,
                 if ($distance <= $radius) {
                     // Check if the gym is available on the specified days and within the specified time range
                     if (checkGymAvailability($row, $days, $startTime, $endTime, $types)) {
+                        // Fetch gym rating data
+                        $ratingData = getGymRating($row['id']);
+
                         $row['lat'] = (float) $row['lat'];
                         $row['loong'] = (float) $row['loong'];
                         $row['img'] = $GLOBALS['appPath'] . '/uploads/gyms/' . $row['img'];
+                        $row['avg_rating'] = ($ratingData !== null) ? round($ratingData['avg_rating'], 2) : null;
+                        $row['total_ratings'] = ($ratingData !== null) ? $ratingData['total_ratings'] : 0;
+
                         $gyms[] = $row;
                     }
                 }
@@ -141,9 +147,15 @@ function getAllGyms($sessionType, $gender, $fee, $days, $startTime, $endTime, $t
         while ($row = mysqli_fetch_assoc($result)) {
             // Check if the gym is available on the specified days and within the specified time range
             if (checkGymAvailability($row, $days, $startTime, $endTime, $types)) {
+                // Fetch gym rating data
+                $ratingData = getGymRating($row['id']);
+
                 $row['lat'] = (float) $row['lat'];
                 $row['loong'] = (float) $row['loong'];
                 $row['img'] = $GLOBALS['appPath'] . '/uploads/gyms/' . $row['img'];
+                $row['avg_rating'] = ($ratingData !== null) ? round($ratingData['avg_rating'], 2) : null;
+                $row['total_ratings'] = ($ratingData !== null) ? $ratingData['total_ratings'] : 0;
+
                 $gyms[] = $row;
             }
         }
@@ -151,6 +163,29 @@ function getAllGyms($sessionType, $gender, $fee, $days, $startTime, $endTime, $t
 
     return $gyms;
 }
+
+function getGymRating($gymId)
+{
+    global $con; // Assuming $con is the database connection object
+
+    $query = "SELECT AVG(rating) AS avg_rating, COUNT(rating) AS total_ratings FROM ratings WHERE gym_id = ?";
+    $stmt = mysqli_prepare($con, $query);
+    mysqli_stmt_bind_param($stmt, 'i', $gymId);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    if ($result) {
+        $row = mysqli_fetch_assoc($result);
+        $ratingData = array(
+            'avg_rating' => $row['avg_rating'],
+            'total_ratings' => (int) $row['total_ratings']
+        );
+        return $ratingData;
+    }
+
+    return null;
+}
+
 
 function checkGymAvailability($gym, $days, $startTime, $endTime, $types)
 {
