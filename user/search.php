@@ -259,11 +259,11 @@ function generateParamTypes($params)
     return $paramTypes;
 }
 
-function getParamReferences($params)
+function getParamReferences(&$params)
 {
     $paramReferences = [];
     foreach ($params as $key => $value) {
-        $paramReferences[] = &$params[$key];
+        $paramReferences[$key] = &$params[$key];
     }
     return $paramReferences;
 }
