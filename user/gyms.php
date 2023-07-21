@@ -9,14 +9,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     } else {
         $userID = $_GET['user_id'];
 
-        $query = "SELECT gyms.id, gyms.name, gyms.days, gyms.types, gyms.startTime, gyms.endTime, gyms.sessions, gyms.gender, gyms.address, gyms.lat, gyms.loong, gyms.img, gyms.fees, AVG(ratings.rating) AS avg_rating, COUNT(ratings.rating) AS total_ratings
+        $query = "SELECT gyms.id, gyms.name, gyms.days, gyms.types, gyms.startTime, gyms.endTime, gyms.sessions, gyms.gender, gyms.address, gyms.lat, gyms.loong, gyms.img, gyms.fees, AVG(ratings.rating) AS avg_rating, COUNT(ratings.rating) AS total_ratings,
+                  CASE WHEN ratings.user_id IS NOT NULL THEN TRUE ELSE FALSE END AS is_rated
                   FROM gyms
                   INNER JOIN user_payments ON gyms.id = user_payments.gym_id
-                  LEFT JOIN ratings ON gyms.id = ratings.gym_id
+                  LEFT JOIN ratings ON gyms.id = ratings.gym_id AND ratings.user_id = ?
                   WHERE user_payments.user_id = ?
                   GROUP BY gyms.id";
+
         $stmt = mysqli_prepare($con, $query);
-        mysqli_stmt_bind_param($stmt, 'i', $userID);
+        mysqli_stmt_bind_param($stmt, 'ii', $userID, $userID);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
 
@@ -43,4 +45,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
 echo json_encode($response);
 http_response_code($status);
-?>
