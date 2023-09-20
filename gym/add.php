@@ -28,6 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $startTime = $_POST['startTime'];
         $endTime = $_POST['endTime'];
         $types = $_POST['types'];
+        $startDate = $_POST['startDate'];
+        $endDate = $_POST['endDate'];
 
         // Handle file upload
         $uploadDir = '../uploads/gyms/';
@@ -48,8 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Insert parameters into the 'gyms' table
-        $query = "INSERT INTO gyms (user_id, name, sessions, gender, address, lat, loong, img, fees, days, startTime, endTime, types) VALUES
-                        ($userId, '$gymName', '$sessionType', '$gender', '$address', $lat, $loong, '$img', '$fees', '$days', '$startTime', '$endTime', '$types')";
+        $query = "INSERT INTO gyms (user_id, name, sessions, gender, address, lat, loong, img, fees, days, startTime, endTime, types,startDate,endDate) VALUES
+                        ($userId, '$gymName', '$sessionType', '$gender', '$address', $lat, $loong, '$img', '$fees', '$days', '$startTime', '$endTime', '$types','$startDate', '$endDate')";
         $stmt = mysqli_query($con, $query);
 
         if ($stmt) {

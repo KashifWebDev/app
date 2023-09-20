@@ -12,13 +12,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $types = $_GET['types'] ?? null;
     $startTime = $_GET['startTime'] ?? null;
     $endTime = $_GET['endTime'] ?? null;
+    $appointmentDate = $_GET['appointmentDate'] ?? null; // New parameter
 
     if ($userLat !== null && $userLng !== null && $radius === null) {
-        // If lat and long are provided without radius, list all gyms without applying the radius filter
-        $gyms = getAllGyms($sessionType, $gender, $fee, $days, $startTime, $endTime, $types);
+        $gyms = getAllGyms($sessionType, $gender, $fee, $days, $startTime, $endTime, $types, $appointmentDate);
     } else {
-        // Filter gyms within the specified radius
-        $gyms = getGymsWithinRadius($userLat, $userLng, $radius, $sessionType, $gender, $fee, $days, $startTime, $endTime, $types);
+        $gyms = getGymsWithinRadius($userLat, $userLng, $radius, $sessionType, $gender, $fee, $days, $startTime, $endTime, $types, $appointmentDate);
     }
 
     if (!empty($gyms)) {
@@ -41,28 +40,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 echo json_encode($response);
 http_response_code($status);
 
-function getGymsWithinRadius($userLat, $userLng, $radius, $sessionType, $gender, $fee, $days, $startTime, $endTime, $types)
+function getGymsWithinRadius($userLat, $userLng, $radius, $sessionType, $gender, $fee, $days, $startTime, $endTime, $types, $appointmentDate)
 {
-    global $con; // Assuming $con is the database connection object
+    global $con;
 
     $gyms = [];
 
     if ($userLat !== null && $userLng !== null && $radius !== null) {
-        $query = "SELECT id, name, sessions, gender, address, lat, loong, img, fees, days, startTime, endTime, types
-              FROM gyms";
+        $query = "SELECT id, name, sessions, gender, address, lat, loong, img, fees, days, startTime, endTime, types, startDate, endDate
+              FROM gyms
+              WHERE startDate <= ? AND endDate >= ?";
 
         $params = [];
+        $params[] = $appointmentDate;
+        $params[] = $appointmentDate;
 
         if ($sessionType !== null) {
-            $query .= " WHERE sessions = ?";
+            $query .= " AND sessions = ?";
             $params[] = $sessionType;
         }
         if ($gender !== null) {
-            $query .= ($sessionType !== null) ? " AND gender = ?" : " WHERE gender = ?";
+            $query .= " AND gender = ?";
             $params[] = $gender;
         }
         if ($fee !== null) {
-            $query .= ($sessionType !== null || $gender !== null) ? " AND fees <= ?" : " WHERE fees <= ?";
+            $query .= " AND fees <= ?";
             $params[] = $fee;
         }
 
@@ -85,9 +87,7 @@ function getGymsWithinRadius($userLat, $userLng, $radius, $sessionType, $gender,
                 $distance = calculateDistance($userLat, $userLng, $gymLat, $gymLng);
 
                 if ($distance <= $radius) {
-                    // Check if the gym is available on the specified days and within the specified time range
-                    if (checkGymAvailability($row, $days, $startTime, $endTime, $types)) {
-                        // Fetch gym rating data
+                    if (checkGymAvailability($row, $days, $startTime, $endTime, $types, $appointmentDate)) {
                         $ratingData = getGymRating($row['id']);
 
                         $row['lat'] = (float) $row['lat'];
@@ -103,33 +103,36 @@ function getGymsWithinRadius($userLat, $userLng, $radius, $sessionType, $gender,
             }
         }
     } else {
-        $gyms = getAllGyms($sessionType, $gender, $fee, $days, $startTime, $endTime, $types);
+        $gyms = getAllGyms($sessionType, $gender, $fee, $days, $startTime, $endTime, $types, $appointmentDate);
     }
 
     return $gyms;
 }
 
-function getAllGyms($sessionType, $gender, $fee, $days, $startTime, $endTime, $types)
+function getAllGyms($sessionType, $gender, $fee, $days, $startTime, $endTime, $types, $appointmentDate)
 {
-    global $con; // Assuming $con is the database connection object
+    global $con;
 
     $gyms = [];
 
-    $query = "SELECT id, name, sessions, gender, address, lat, loong, img, fees, days, startTime, endTime, types
-              FROM gyms";
+    $query = "SELECT id, name, sessions, gender, address, lat, loong, img, fees, days, startTime, endTime, types, startDate, endDate
+              FROM gyms
+              WHERE startDate <= ? AND endDate >= ?";
 
     $params = [];
+    $params[] = $appointmentDate;
+    $params[] = $appointmentDate;
 
     if ($sessionType !== null) {
-        $query .= " WHERE sessions = ?";
+        $query .= " AND sessions = ?";
         $params[] = &$sessionType;
     }
     if ($gender !== null) {
-        $query .= ($sessionType !== null) ? " AND gender = ?" : " WHERE gender = ?";
+        $query .= " AND gender = ?";
         $params[] = &$gender;
     }
     if ($fee !== null) {
-        $query .= ($sessionType !== null || $gender !== null) ? " AND fees <= ?" : " WHERE fees <= ?";
+        $query .= " AND fees <= ?";
         $params[] = &$fee;
     }
 
@@ -146,9 +149,7 @@ function getAllGyms($sessionType, $gender, $fee, $days, $startTime, $endTime, $t
 
     if ($result) {
         while ($row = mysqli_fetch_assoc($result)) {
-            // Check if the gym is available on the specified days and within the specified time range
-            if (checkGymAvailability($row, $days, $startTime, $endTime, $types)) {
-                // Fetch gym rating data
+            if (checkGymAvailability($row, $days, $startTime, $endTime, $types, $appointmentDate)) {
                 $ratingData = getGymRating($row['id']);
 
                 $row['lat'] = (float) $row['lat'];
@@ -189,7 +190,7 @@ function getGymRating($gymId)
 }
 
 
-function checkGymAvailability($gym, $days, $startTime, $endTime, $types)
+function checkGymAvailability($gym, $days, $startTime, $endTime, $types, $appointmentDate)
 {
     if ($days !== null) {
         $gymDays = explode(',', $gym['days']);
@@ -220,6 +221,20 @@ function checkGymAvailability($gym, $days, $startTime, $endTime, $types)
 
         if ($userStartTime < $gymStartTime || $userEndTime > $gymEndTime) {
             return false;
+        }
+    }
+
+    if ($appointmentDate !== null) {
+        $gymStartDate = strtotime($gym['startDate']);
+        $gymEndDate = strtotime($gym['endDate']);
+        $userAppointmentDate = strtotime($appointmentDate);
+
+        if ($gymStartDate === false || $gymEndDate === false || $userAppointmentDate === false) {
+            return false; // Skip gyms with invalid date formats
+        }
+
+        if ($userAppointmentDate < $gymStartDate || $userAppointmentDate > $gymEndDate) {
+            return false; // Gym is not available on the provided appointmentDate
         }
     }
 

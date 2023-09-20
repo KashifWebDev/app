@@ -28,6 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $startTime = $_POST['startTime'];
         $endTime = $_POST['endTime'];
         $types = $_POST['types'];
+        $startDate = $_POST['startDate'];
+        $endDate = $_POST['endDate'];
 
         // Handle file upload
         $uploadDir = '../uploads/gyms/';
@@ -47,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        $updateQuery = "UPDATE gyms SET name = '$gymName', sessions = '$sessionType', gender = '$gender', address = '$address', lat = $lat, loong = $loong, fees = $fees, days = '$days', startTime = '$startTime', endTime = '$endTime', types = '$types'";
+        $updateQuery = "UPDATE gyms SET name = '$gymName', sessions = '$sessionType', gender = '$gender', address = '$address', lat = $lat, loong = $loong, fees = $fees, days = '$days', startTime = '$startTime', endTime = '$endTime', types = '$types', startDate='$startDate', endDate='$endDate'";
 
         if (!empty($img)) {
             $updateQuery .= ", img = '$img'";
