@@ -11,9 +11,11 @@ $user = "root";
 $pwd = "";
 $db = "gymApp";
 
+
 $user = "u953547654_app";
 $pwd = "App@12345";
 $db = "u953547654_app";
+
 
 
 $appPath = $GLOBALS['appPath'] = 'https://app.kashifali.me';

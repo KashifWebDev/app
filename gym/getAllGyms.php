@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $status = 400;
     } else {
         $userId = $_GET['user_id'];
-        $query = "SELECT gyms.id, gyms.user_id, gyms.name, gyms.sessions, gyms.gender, gyms.address, gyms.fees, gyms.lat, gyms.loong, gyms.days, gyms.startTime, gyms.endTime, gyms.img, gyms.types, AVG(ratings.rating) AS avg_rating, COUNT(ratings.rating) AS total_ratings
+        $query = "SELECT gyms.id, gyms.user_id, gyms.name, gyms.sessions, gyms.gender, gyms.address, gyms.fees, gyms.lat, gyms.loong, gyms.days, gyms.startTime, gyms.endTime, gyms.startDate, gyms.endDate, gyms.img, gyms.types, AVG(ratings.rating) AS avg_rating, COUNT(ratings.rating) AS total_ratings
                 FROM gyms
                 LEFT JOIN ratings ON gyms.id = ratings.gym_id
                 WHERE gyms.user_id = '$userId'
@@ -48,7 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     'img' => $appPath.'/uploads/gyms/'.$row['img'],
                     'videos' => $videos,
                     'rating' => ($row['avg_rating'] !== null) ? round($row['avg_rating'], 2) : null,
-                    'total_ratings' => (int) $row['total_ratings']
+                    'total_ratings' => (int) $row['total_ratings'],
+                    'startDate' => $row['startDate'],
+                    'endDate' => $row['endDate']
                 );
             }
 
